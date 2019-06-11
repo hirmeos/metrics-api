@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Usage metrics JSON API prototype. Simple web.py based API to a PostgreSQL database.
+Usage metrics JSON API. Simple web.py based API to a
+PostgreSQL database that runs on port 8080.
 
 usage: python metrics.py
 
-(c) Javier Arias, Open Book Publishers, March 2018
+(c) Javier Arias, Open Book Publishers, May 2019
 Use of this software is governed by the terms of the MIT license
 
 Dependencies:
@@ -18,26 +19,24 @@ import os
 import web
 import json
 import jwt
-import psycopg2
+from aux import logger_instance, debug_mode
+from errors import Error, internal_error, not_found, \
+    NORESULT, BADFILTERS, UNAUTHORIZED, FORBIDDEN
 from models import Event
-
-from errors import NotFound, NotAllowed
 from logic import save_new_entry
 
-# uniformly receive all database output in Unicode
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
-
-# determine logging level
-import logging
-debug = os.environ['API_DEBUG'] == 'True'
-if debug:
-    logging.basicConfig(level=logging.NOTSET)
-else:
-    logging.basicConfig(level=logging.ERROR)
-logger = logging.getLogger(__name__)
-
-jwt_key = os.getenv('JWT_KEY', '')  # Key for decoding JWT
+# get logging interface
+logger = logger_instance(__name__)
+web.config.debug = debug_mode()
+# Get secret key to check JWT
+SECRET_KEY = ""
+try:
+    SECRET_KEY = os.environ['SECRET_KEY']
+    if not SECRET_KEY:
+        raise KeyError
+except KeyError as error:
+    logger.error(error)
+    raise
 
 # Define routes
 urls = (
@@ -45,44 +44,60 @@ urls = (
     "(.*)", "NotFound",
 )
 
+try:
+    db = web.database(dbn='postgres',
+                      host=os.environ['POSTGRESDB_HOST'],
+                      user=os.environ['POSTGRESDB_USER'],
+                      pw=os.environ['POSTGRESDB_PASSWORD'],
+                      db=os.environ['POSTGRESDB_DB'])
+except Exception as error:
+    logger.error(error)
+    raise
+
+
 def api_response(fn):
     """Decorator to provided consistency in all responses"""
     def response(self, *args, **kw):
         data  = fn(self, *args, **kw)
-        count = len(data) if data else 0
+        count = len(data)
         if count > 0:
-            return {'status': 'ok', 'count': count, 'data': data}
+            return {'status': 'ok', 'code': 200, 'count': count, 'data': data}
         else:
-            logger.debug("No output data")
-            raise NotFound()
+            raise Error(NORESULT)
     return response
+
 
 def json_response(fn):
     """JSON decorator"""
     def response(self, *args, **kw):
-        web.header('Content-Type', 'application/json')
-        return json.dumps(fn(self, *args, **kw))
+        web.header('Content-Type', 'application/json;charset=UTF-8')
+        web.header('Access-Control-Allow-Origin',
+                   '"'.join([os.environ['ALLOW_ORIGIN']]))
+        web.header('Access-Control-Allow-Credentials', 'true')
+        web.header('Access-Control-Allow-Headers',
+                   'Authorization, x-test-header, Origin, '
+                   'X-Requested-With, Content-Type, Accept')
+        return json.dumps(fn(self, *args, **kw), ensure_ascii=False)
     return response
 
 
 def get_token_from_header():
     bearer = web.ctx.env.get('HTTP_AUTHORIZATION', '')
-    return bearer.replace('Bearer ', '')
+    return bearer.replace("Bearer ", "") if bearer else ""
 
 
-def check_token(fn):  # Use token-checking logic from the translation service.
+def check_token(fn):
     """Decorator to act as middleware, checking authentication token"""
     def response(self, *args, **kw):
-        token = get_token_from_header()
+        intoken = get_token_from_header()
         try:
-            jwt.decode(token, jwt_key)
-        except (
-                jwt.exceptions.DecodeError,
-                jwt.ExpiredSignatureError,
-                jwt.InvalidTokenError
-        ) as e:  # TODO: Add more meaningful feedback for each error.
-            logger.error(e)
-            raise NotAllowed
+            jwt.decode(intoken, SECRET_KEY)
+        except jwt.exceptions.DecodeError:
+            raise Error(FORBIDDEN)
+        except jwt.ExpiredSignatureError:
+            raise Error(UNAUTHORIZED, msg="Signature expired.")
+        except jwt.InvalidTokenError:
+            raise Error(UNAUTHORIZED, msg="Invalid token.")
         return fn(self, *args, **kw)
     return response
 
@@ -152,6 +167,6 @@ class MetricsDB(RequestBroker):
 if __name__ == "__main__":
     logger.info("Starting API...")
     app = web.application(urls, globals())
-    app.internalerror = web.debugerror
-    web.config.debug = debug
+    app.internalerror = internal_error
+    app.notfound = not_found
     app.run()

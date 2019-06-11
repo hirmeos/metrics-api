@@ -1,45 +1,27 @@
 version: "3.5"
 
 services:
-  readeranalyticsservice_db:
-    build: ./db
-    container_name: "readeranalyticsservice_db"
+  metrics_db:
+    image: openbookpublishers/metrics_db
+    container_name: "metrics_db"
     restart: unless-stopped
     volumes:
       - db:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro
     env_file:
-      - db.env
-    networks:
-      statistics_collection:
-        ipv4_address: 172.20.0.5
+      - ./config/db.env
 
-  readeranalyticsservice_api:
-    build:
-      context: ./api/
-      dockerfile: docker/Dockerfile
-    container_name: "readeranalyticsservice_api"
+  metrics_api:
+    image: openbookpublishers/metrics_api
+    container_name: "metrics_api"
     restart: unless-stopped
-    ports:
-      - 8080:8080
     environment:
-      - POSTGRES_HOST=readeranalyticsservice_db
-      - API_DEBUG=True
+      - POSTGRES_HOST=metrics_db
     env_file:
-      - db.env
+      - ./config/api.env
+      - ./config/db.env
     depends_on:
-      - readeranalyticsservice_db
-    networks:
-      statistics_collection:
-        ipv4_address: 172.20.0.6
+      - metrics_db
 
 volumes:
   db:
-
-networks:
-  statistics_collection:
-    name: "statistics_collection"
-    driver: bridge
-    ipam:
-      config:
-      - subnet: 172.20.0.0/24

@@ -1,31 +1,12 @@
-import uuid
-import logging
 import os
+import uuid
 import psycopg2
+from api import db
+from uri import URI
+from aux import logger_instance
+from errors import Error, FATAL
 
-from errors import NotFound, NotAllowed
-
-
-logger = logging.getLogger(__name__)
-
-
-def database_handle():
-
-    db_host = os.environ['POSTGRES_HOST']
-    db_name = os.environ['POSTGRES_DB']
-    db_user = os.environ['POSTGRES_USER']
-    db_passwd = os.environ['POSTGRES_PASSWORD']
-
-    dbconfig = (
-        "dbname='{db_name}' user='{db_user}' host='{db_host}' "
-        "password='{db_passwd}'".format(**locals())
-    )
-    try:
-        return psycopg2.connect(dbconfig)
-    except psycopg2.OperationalError as error:
-        logger.error(error)
-        raise
-
+logger = logger_instance(__name__)
 
 class Event(object):
     def __init__(self, event_id, uri, measure, timestamp, value, country, uploader):

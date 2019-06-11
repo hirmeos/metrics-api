@@ -1,11 +1,8 @@
-import logging
-
+from aux import logger_instance
+from logic import save_new_entry
 from nameko.events import event_handler
 
-from logic import save_new_entry
-
-
-logger = logging.getLogger(__name__)
+logger = logger_instance(__name__)
 
 
 class NewEventServiceReceiver(object):

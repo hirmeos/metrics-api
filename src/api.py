@@ -28,20 +28,23 @@ from logic import save_new_entry
 # get logging interface
 logger = logger_instance(__name__)
 web.config.debug = debug_mode()
+# You may disable JWT auth. when implementing the API in a local network
+JWT_DISABLED = False
 # Get secret key to check JWT
 SECRET_KEY = ""
 try:
-    SECRET_KEY = os.environ['SECRET_KEY']
-    if not SECRET_KEY:
-        raise KeyError
-except KeyError as error:
+    if 'JWT_DISABLED' in os.environ:
+        JWT_DISABLED = os.environ['JWT_DISABLED'] in ('true', 'True')
+    if 'SECRET_KEY' in os.environ:
+        SECRET_KEY = os.environ['SECRET_KEY']
+    assert JWT_DISABLED or SECRET_KEY
+except AssertionError as error:
     logger.error(error)
     raise
 
 # Define routes
 urls = (
-    "/metrics(/?)", "MetricsDB",
-    "(.*)", "NotFound",
+    "/metrics(/?)", "metricsctrl.MetricsController"
 )
 
 try:
@@ -71,19 +74,11 @@ def json_response(fn):
     """JSON decorator"""
     def response(self, *args, **kw):
         web.header('Content-Type', 'application/json;charset=UTF-8')
-        web.header('Access-Control-Allow-Origin',
-                   '"'.join([os.environ['ALLOW_ORIGIN']]))
-        web.header('Access-Control-Allow-Credentials', 'true')
         web.header('Access-Control-Allow-Headers',
                    'Authorization, x-test-header, Origin, '
                    'X-Requested-With, Content-Type, Accept')
         return json.dumps(fn(self, *args, **kw), ensure_ascii=False)
     return response
-
-
-def get_token_from_header():
-    bearer = web.ctx.env.get('HTTP_AUTHORIZATION', '')
-    return bearer.replace("Bearer ", "") if bearer else ""
 
 
 def check_token(fn):
@@ -102,66 +97,9 @@ def check_token(fn):
     return response
 
 
-class RequestBroker(object):
-    """Handles HTTP requests"""
-
-    @json_response
-    @api_response
-    @check_token
-    def GET(self, name):
-        """Get Events for a given object ID"""
-        logger.debug("Request: '%s'; Query: %s" % (name, web.input()))
-
-        uri = web.input().get('uri') or web.input().get('URI')
-        try:
-            assert uri
-        except AssertionError:
-            logger.debug("Invalid URI provided")
-            raise NotFound()
-
-        results = self.get_obj_events(uri)
-        data = []
-        for e in results:
-            event = Event(e[0], e[1], e[2], e[3], e[4], e[5], e[6])
-            data.append(event.__dict__)
-
-        web.header('Access-Control-Allow-Origin', '*')
-
-        return data
-
-    @json_response
-    @api_response
-    @check_token
-    def POST(self, name=None):
-        """Create a new event"""
-        data = json.loads(web.data())
-        return save_new_entry(data)
-
-    def PUT(self, name):
-        raise NotAllowed()
-
-    def DELETE(self, name):
-        raise NotAllowed()
-
-    @json_response
-    def OPTIONS(self, name):
-        web.header('Access-Control-Allow-Methods', 'OPTIONS, GET, HEAD')
-        web.header('Access-Control-Allow-Headers', 'authorization')
-        web.header('Access-Control-Allow-Origin', '*')
-
-        return {'status': 'ok'}
-
-
-class MetricsDB(RequestBroker):
-    """PostgesDB handler."""
-
-    def get_obj_events(self, key):
-        result = Event.get_events(str(key))
-        if result is not None:
-            return result
-        else:
-            logger.debug("No data for URI: %s" % (key))
-            raise NotFound()
+def get_token_from_header():
+    bearer = web.ctx.env.get('HTTP_AUTHORIZATION', '')
+    return bearer.replace("Bearer ", "") if bearer else ""
 
 
 if __name__ == "__main__":

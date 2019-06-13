@@ -84,19 +84,42 @@ def json_response(fn):
     return response
 
 
-def check_token(fn):
-    """Decorator to act as middleware, checking authentication token"""
-    def response(self, *args, **kw):
-        intoken = get_token_from_header()
+def decode_token(intoken=get_token_from_header()):
         try:
-            jwt.decode(intoken, SECRET_KEY)
+            return jwt.decode(intoken, SECRET_KEY)
         except jwt.exceptions.DecodeError:
             raise Error(FORBIDDEN)
         except jwt.ExpiredSignatureError:
             raise Error(UNAUTHORIZED, msg="Signature expired.")
         except jwt.InvalidTokenError:
             raise Error(UNAUTHORIZED, msg="Invalid token.")
+
+
+def valid_user(fn):
+    """Decorator to act as middleware, checking token"""
+    def response(self, *args, **kw):
+        payload = decode_token()
+        if payload['sub'] != 'user':
+            raise Error(UNAUTHORIZED, msg="You lack write rights.")
         return fn(self, *args, **kw)
+    return response
+
+
+def admin_user(fn):
+    """Decorator to act as middleware, checking token for admin rights"""
+    def response(self, *args, **kw):
+        payload = decode_token()
+        if payload['sub'] != 'admin':
+            raise Error(UNAUTHORIZED, msg="You lack admin rights.")
+        return fn(self, *args, **kw)
+    return response
+
+
+def check_token(fn):
+    """Decorator to act as middleware, checking authentication token"""
+    def response(self, *args, **kw):
+        if decode_token():
+            return fn(self, *args, **kw)
     return response
 
 

@@ -1,6 +1,6 @@
 FROM python:2
 
-RUN apt-get -y install apt-utils supervisor
+RUN apt-get update && apt-get -y install apt-utils supervisor
 
 WORKDIR /usr/src/app
 

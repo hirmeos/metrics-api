@@ -74,6 +74,9 @@ def json_response(fn):
     """JSON decorator"""
     def response(self, *args, **kw):
         web.header('Content-Type', 'application/json;charset=UTF-8')
+        web.header('Access-Control-Allow-Origin',
+                   '"'.join([os.environ['ALLOW_ORIGIN']]))
+        web.header('Access-Control-Allow-Credentials', 'true')
         web.header('Access-Control-Allow-Headers',
                    'Authorization, x-test-header, Origin, '
                    'X-Requested-With, Content-Type, Accept')

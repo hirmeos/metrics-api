@@ -21,9 +21,7 @@ import json
 import jwt
 from aux import logger_instance, debug_mode
 from errors import Error, internal_error, not_found, \
-    NORESULT, BADFILTERS, UNAUTHORIZED, FORBIDDEN
-from models import Event
-from logic import save_new_entry
+    NORESULT, UNAUTHORIZED, FORBIDDEN
 
 # get logging interface
 logger = logger_instance(__name__)
@@ -84,6 +82,11 @@ def json_response(fn):
     return response
 
 
+def get_token_from_header():
+    bearer = web.ctx.env.get('HTTP_AUTHORIZATION', '')
+    return bearer.replace("Bearer ", "") if bearer else ""
+
+
 def decode_token(intoken=get_token_from_header()):
         try:
             return jwt.decode(intoken, SECRET_KEY)
@@ -121,11 +124,6 @@ def check_token(fn):
         if decode_token():
             return fn(self, *args, **kw)
     return response
-
-
-def get_token_from_header():
-    bearer = web.ctx.env.get('HTTP_AUTHORIZATION', '')
-    return bearer.replace("Bearer ", "") if bearer else ""
 
 
 if __name__ == "__main__":

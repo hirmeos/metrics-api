@@ -1,15 +1,15 @@
-import os
 import uuid
 import psycopg2
 from api import db
-from uri import URI
 from aux import logger_instance
 from errors import Error, FATAL
 
 logger = logger_instance(__name__)
 
+
 class Event(object):
-    def __init__(self, event_id, uri, measure, timestamp, value, country, uploader):
+    def __init__(self, event_id, uri, measure, timestamp, value, country,
+                 uploader):
         self.event_id  = str(event_id) if event_id else str(uuid.uuid4())
         self.URI       = str(uri)
         self.measure   = str(measure)
@@ -20,36 +20,19 @@ class Event(object):
 
     def save(self):
         try:
-            connection = database_handle()
-            c = connection.cursor()
-            statement = (
-                "INSERT INTO event (event_id, uri, measure_id,"
-                "timestamp, country_id, value, uploader_id) VALUES "
-                "('%s', '%s', '%s', '%s', '%s', '%s', '%s');" % (
-                    self.event_id, self.URI, self.measure, self.timestamp,
-                    self.country, self.value, self.uploader
-                )
-            )
-            c.execute(statement)
-            success = connection.commit()
-            return success
+            q = '''INSERT INTO event (event_id, uri, measure_id, timestamp,
+                    country_id, value, uploader_id) VALUES ($event_id, $uri,
+                    $measure_id, $timestamp, $country, $value, $uploader)
+                    ON CONFLICT DO NOTHING'''
+            db.query(q, dict(event_id=self.event_id, uri=self.URI,
+                             measure=self.measure, timestamp=self.timestamp,
+                             country=self.country, value=self.value,
+                             uploader=self.uploader))
         except (Exception, psycopg2.DatabaseError) as error:
-            logging.error(error)
-            raise NotFound()
-        finally:
-            if c is not None:
-                c.close()
+            logger.debug(error)
+            raise Error(FATAL)
 
     @staticmethod
     def get_events(key):
-        try:
-            c = database_handle().cursor()
-            c.execute("SELECT * FROM event WHERE uri = %s;", (key,))
-            result = c.fetchall()
-            return result
-        except (Exception, psycopg2.DatabaseError) as error:
-            logging.error(error)
-            raise NotFound()
-        finally:
-            if c is not None:
-                c.close()
+        options = dict(uri=key)
+        return db.select('event', options, where="uri = $uri")

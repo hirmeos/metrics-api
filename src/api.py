@@ -42,7 +42,7 @@ except AssertionError as error:
 
 # Define routes
 urls = (
-    "/metrics(/?)", "metricsctrl.MetricsController"
+    "/events(/?)", "eventsctrl.EventsController"
 )
 
 try:

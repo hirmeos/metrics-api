@@ -9,7 +9,7 @@ logger = logger_instance(__name__)
 class Event(object):
     def __init__(self, event_id, work_uri, measure_uri, timestamp, value,
                  event_uri=None, country_uri=None, uploader_uri=''):
-        self.event_id  = event_id
+        self.event_id = event_id
         self.work_uri = work_uri
         self.measure_uri = measure_uri
         self.timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%S%z')

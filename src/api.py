@@ -91,14 +91,14 @@ def get_token_from_header():
 
 
 def decode_token(intoken):
-        try:
-            return jwt.decode(intoken, SECRET_KEY)
-        except jwt.exceptions.DecodeError:
-            raise Error(FORBIDDEN)
-        except jwt.ExpiredSignatureError:
-            raise Error(UNAUTHORIZED, msg="Signature expired.")
-        except jwt.InvalidTokenError:
-            raise Error(UNAUTHORIZED, msg="Invalid token.")
+    try:
+        return jwt.decode(intoken, SECRET_KEY)
+    except jwt.exceptions.DecodeError:
+        raise Error(FORBIDDEN)
+    except jwt.ExpiredSignatureError:
+        raise Error(UNAUTHORIZED, msg="Signature expired.")
+    except jwt.InvalidTokenError:
+        raise Error(UNAUTHORIZED, msg="Invalid token.")
 
 
 def valid_user(fn):

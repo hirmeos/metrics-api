@@ -1,14 +1,16 @@
 import web
 import uuid
 from aux import logger_instance, debug_mode
-from api import json, json_response, api_response, valid_user, build_params, \
-    build_date_clause, get_uploader_from_token
+from api import (json, json_response, api_response, valid_user, build_params,
+                 build_date_clause, get_uploader_from_token)
 from errors import Error, NOTALLOWED, BADPARAMS, NORESULT
-from models import Event, results_to_events, results_to_measure_aggregation, \
-    results_to_measure_country_aggregation, \
-    results_to_country_measure_aggregation, \
-    results_to_measure_year_aggregation, results_to_year_measure_aggregation, \
-    results_to_measure_month_aggregation, results_to_month_measure_aggregation
+from models import (Event, results_to_events, results_to_measure_aggregation,
+                    results_to_measure_country_aggregation,
+                    results_to_country_measure_aggregation,
+                    results_to_measure_year_aggregation,
+                    results_to_year_measure_aggregation,
+                    results_to_measure_month_aggregation,
+                    results_to_month_measure_aggregation)
 from dateutil import parser
 
 

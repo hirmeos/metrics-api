@@ -298,8 +298,8 @@ def results_to_measure_country_aggregation(results):
     data = []
     countries = []  # temporary list of countries
     last = len(results) - 1
-    i = 0
-    for r in results:
+
+    for i, r in enumerate(results):
         if i == 0:
             # we can't do cur=results[0] outsise--it moves IterBetter's pointer
             cur = r
@@ -316,7 +316,6 @@ def results_to_measure_country_aggregation(results):
             measure = result_to_measure(cur)
             measure.data = countries
             data.append(measure.__dict__)
-        i += 1
     return data
 
 
@@ -325,8 +324,7 @@ def results_to_country_measure_aggregation(results):
     measures = []  # temporary list of measures
     last = len(results) - 1
 
-    i = 0
-    for r in results:
+    for i, r in enumerate(results):
         if i == 0:
             # we can't do cur=results[0] outsise--it moves IterBetter's pointer
             cur = r
@@ -343,7 +341,6 @@ def results_to_country_measure_aggregation(results):
             country = result_to_country(cur)
             country.data = measures
             data.append(country.__dict__)
-        i += 1
     return data
 
 
@@ -351,8 +348,8 @@ def results_to_measure_year_aggregation(results):
     data = []
     years = []  # temporary list of years
     last = len(results) - 1
-    i = 0
-    for r in results:
+
+    for i, r in enumerate(results):
         if i == 0:
             # we can't do cur=results[0] outsise--it moves IterBetter's pointer
             cur = r
@@ -367,7 +364,6 @@ def results_to_measure_year_aggregation(results):
             measure = result_to_measure(cur)
             measure.data = years
             data.append(measure.__dict__)
-        i += 1
     return data
 
 
@@ -375,8 +371,8 @@ def results_to_year_measure_aggregation(results):
     data = []
     measures = []  # temporary list of measures
     last = len(results) - 1
-    i = 0
-    for r in results:
+
+    for i, r in enumerate(results):
         if i == 0:
             # we can't do cur=results[0] outsise--it moves IterBetter's pointer
             cur = r
@@ -389,7 +385,6 @@ def results_to_year_measure_aggregation(results):
         measures.append(measure.__dict__)
         if i == last:
             data.append(dict(year=cur["year"], data=measures))
-        i += 1
     return data
 
 
@@ -397,8 +392,8 @@ def results_to_measure_month_aggregation(results):
     data = []
     months = []  # temporary list of months
     last = len(results) - 1
-    i = 0
-    for r in results:
+
+    for i, r in enumerate(results):
         if i == 0:
             # we can't do cur=results[0] outsise--it moves IterBetter's pointer
             cur = r
@@ -413,7 +408,6 @@ def results_to_measure_month_aggregation(results):
             measure = result_to_measure(cur)
             measure.data = months
             data.append(measure.__dict__)
-        i += 1
     return data
 
 
@@ -421,8 +415,8 @@ def results_to_month_measure_aggregation(results):
     data = []
     measures = []  # temporary list of measures
     last = len(results) - 1
-    i = 0
-    for r in results:
+
+    for i, r in enumerate(results):
         if i == 0:
             # we can't do cur=results[0] outsise--it moves IterBetter's pointer
             cur = r
@@ -435,5 +429,4 @@ def results_to_month_measure_aggregation(results):
         measures.append(measure.__dict__)
         if i == last:
             data.append(dict(month=cur["month"], data=measures))
-        i += 1
     return data

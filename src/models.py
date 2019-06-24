@@ -225,7 +225,8 @@ class Measure(object):
         self.version = version
 
     def load_description(self):
-        self.description = self.get_description().list()
+        description = self.get_description()
+        self.description = description.list() if description else []
 
     def get_description(self):
         options = dict(uri=self.measure_uri)
@@ -233,8 +234,7 @@ class Measure(object):
                FROM measure_description INNER JOIN locale USING(locale_code)
                WHERE measure_uri = $uri
                ORDER BY locale_code;'''
-        description = db.query(q, options)
-        return description if description else []
+        return db.query(q, options)
 
     @staticmethod
     def get_all():

@@ -4,15 +4,16 @@
 Usage metrics JSON API. Simple web.py based API to a
 PostgreSQL database that runs on port 8080.
 
-usage: python metrics.py
+usage: python apis.py
 
 (c) Javier Arias, Open Book Publishers, May 2019
 Use of this software is governed by the terms of the MIT license
 
 Dependencies:
+  PyJWT==1.7.1
+  psycopg2-binary==2.7.5
   python-dateutil==2.4.2
-  psycopg2==2.6.1
-  web.py==0.38
+  web.py==0.39
 """
 
 import re

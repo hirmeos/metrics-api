@@ -103,7 +103,7 @@ def decode_token(intoken):
 def valid_user(fn):
     """Decorator to act as middleware, checking token"""
     def response(self, *args, **kw):
-        if not is_user() or is_admin():
+        if not is_user() or not is_admin():
             raise Error(UNAUTHORIZED, msg="You lack write rights.")
         return fn(self, *args, **kw)
     return response

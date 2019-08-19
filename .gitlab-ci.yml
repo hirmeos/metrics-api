@@ -39,7 +39,6 @@ build-push-clean:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   before_script:
-    - source $CI_PROJECT_DIR/release
     - source $CI_PROJECT_DIR/variables
   script:
     - /kaniko/executor

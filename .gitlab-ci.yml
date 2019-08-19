@@ -58,7 +58,7 @@ helm:
     - helm repo add ubiquity s3://service-helm/charts
     - export CHART_VERSION=$(python3 kubernetes/ci/auto_update_chart.py $HELM_PROJECT_NAME $HELM_PROJECT_NAME $IMAGE_NAME)
     - helm package kubernetes/$HELM_PROJECT_NAME/helm/$HELM_PROJECT_NAME
-    - helm s3 push --force /ubiquitypress/$IMAGE_NAME/$HELM_PROJECT_NAME-$CHART_VERSION.tgz ubiquity
+    - helm s3 push --force /builds/ubiquitypress/$IMAGE_NAME/$HELM_PROJECT_NAME-$CHART_VERSION.tgz ubiquity
     - cd kubernetes/
     - git config --global user.name "${GITLAB_USER_NAME}"
     - git config --global user.email "${GITLAB_USER_EMAIL}"

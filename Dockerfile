@@ -9,7 +9,6 @@ RUN pip install --no-cache-dir -r requirements.txt && \
     rm requirements.txt
 
 COPY ./config/supervisord.conf /etc/supervisor/supervisord.conf
-COPY ./config/services.yaml /etc/supervisor/services.yaml
 
 COPY ./src/* ./
 

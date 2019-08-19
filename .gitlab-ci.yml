@@ -44,7 +44,7 @@ build-push-clean:
     - /kaniko/executor
       --build-arg RELEASE
       --context $CI_PROJECT_DIR
-      --dockerfile $CI_PROJECT_DIR/docker/Dockerfile
+      --dockerfile $CI_PROJECT_DIR/Dockerfile
       --destination "eu.gcr.io/$GCLOUD_PROJECT_ID/$IMAGE_NAME:$VERSION"
   only:
     - tags

@@ -21,7 +21,7 @@ import json
 import sys
 import web
 import psycopg2
-from aux import logger_instance, debug_mode, get_input
+from aux import logger_instance, debug_mode, test_mode, get_input
 from errors import Error, InternalError, NotFound, NoMethod, NORESULT
 
 # get logging interface
@@ -82,5 +82,6 @@ def json_response(fn):
 
 
 if __name__ == "__main__":
-    logger.info("Starting API...")
-    app.run()
+    if not test_mode():
+        logger.info("Starting API...")
+        app.run()

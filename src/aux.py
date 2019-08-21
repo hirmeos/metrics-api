@@ -7,8 +7,11 @@ import web
 
 
 def debug_mode():
-    trues = ('True', 'true', True, 1)
-    return 'API_DEBUG' in os.environ and os.environ['API_DEBUG'] in trues
+    return str(os.environ.get('API_DEBUG')).lower() in ('true', '1')
+
+
+def test_mode():
+    return os.environ.get('WEBPY_ENV') == 'test'
 
 
 def logger_instance(name):

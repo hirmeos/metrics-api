@@ -1,0 +1,3 @@
+[submodule "src/tests/fixtures/metrics_db"]
+	path = src/tests/fixtures/metrics_db
+	url = https://github.com/hirmeos/metrics_db.git

@@ -5,7 +5,7 @@ from nameko.events import event_handler
 logger = logger_instance(__name__)
 
 
-class NewEventServiceReceiver(object):
+class NewEventServiceReceiver():
     """Nameko receiver to listen for new text entries from Jura."""
 
     name = 'altmetrics_data_service'

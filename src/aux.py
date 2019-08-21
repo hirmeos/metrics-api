@@ -3,6 +3,7 @@
 
 import os
 import logging
+import web
 
 
 def debug_mode():
@@ -17,7 +18,15 @@ def logger_instance(name):
 
 
 def strtolist(data):
-    if isinstance(data, basestring) or isinstance(data, dict):
+    if isinstance(data, str) or isinstance(data, dict):
         return [data]
-    elif type(data) is list:
+    elif isinstance(data, list):
         return data
+
+
+def is_get_request():
+    return web.ctx.env.get('REQUEST_METHOD', '') == 'GET'
+
+
+def get_input():
+    return web.input() if is_get_request() else web.data().decode('utf-8')

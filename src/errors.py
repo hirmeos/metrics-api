@@ -1,18 +1,20 @@
-import web
 import json
+import web
+from aux import get_input
 
-NOTFOUND     = 10
-NOTALLOWED   = 20
-BADPARAMS    = 30
-BADFILTERS   = 40
-NORESULT     = 50
-FATAL        = 60
+
+NOTFOUND = 10
+NOTALLOWED = 20
+BADPARAMS = 30
+BADFILTERS = 40
+NORESULT = 50
+FATAL = 60
 UNAUTHORIZED = 70
-FORBIDDEN    = 80
-BADAUTH      = 90
-DEFAULT      = NOTFOUND
+FORBIDDEN = 80
+BADAUTH = 90
+DEFAULT = NOTFOUND
 
-_level_messages = {
+_LEVEL_MESSAGES = {
     NOTFOUND:     'Not Found.',
     NOTALLOWED:   'Not Allowed.',
     BADPARAMS:    'Invalid parameters provided.',
@@ -24,7 +26,7 @@ _level_messages = {
     BADAUTH:      'Wrong credentials provided.'
 }
 
-_level_statuses = {
+_LEVEL_STATUSES = {
     NOTFOUND:     '404 Not Found',
     NOTALLOWED:   '405 Method Not Allowed',
     BADPARAMS:    '400 Bad Request',
@@ -36,7 +38,7 @@ _level_statuses = {
     BADAUTH:      '401 Unauthorized'
 }
 
-_level_codes = {
+_LEVEL_CODES = {
     NOTFOUND:     404,
     NOTALLOWED:   405,
     BADPARAMS:    400,
@@ -53,40 +55,47 @@ class Error(web.HTTPError):
     """Exception handler in the form of http errors"""
 
     def __init__(self, level=DEFAULT, msg='', data=[]):
-        httpstatus = self.get_status(level)
-        httpcode   = self.get_code(level)
-        headers    = {'Content-Type': 'application/json'}
-        message    = self.get_message(level)
-        params     = web.input() if web.input() else web.data()
-        output     = json.dumps(
-            self.make_output(httpcode, message, msg, params, data))
+        self.httpstatus = self.get_status(level)
+        self.httpcode = self.get_code(level)
+        self.headers = {'Content-Type': 'application/json'}
+        self.message = self.get_message(level)
+        self.description = msg
+        self.parameters = get_input()
 
-        web.HTTPError.__init__(self, httpstatus, headers, output)
+        output = self.make_output(data)
+        web.HTTPError.__init__(self, self.httpstatus, self.headers, output)
 
     def get_status(self, level):
-        return _level_statuses.get(level)
+        return _LEVEL_STATUSES.get(level)
 
     def get_code(self, level):
-        return _level_codes.get(level)
+        return _LEVEL_CODES.get(level)
 
     def get_message(self, level):
-        return _level_messages.get(level)
+        return _LEVEL_MESSAGES.get(level)
 
-    def make_output(self, httpcode, status_msg, description, parameters, data):
-        return {
+    def make_output(self, data):
+        return json.dumps({
             'status': 'error',
-            'code': httpcode,
-            'message': status_msg,
-            'description': description,
-            'parameters': parameters,
+            'code': self.httpcode,
+            'message': self.message,
+            'description': self.description,
+            'parameters': self.parameters,
             'count': len(data),
             'data': data
-        }
+        })
 
 
-def not_found():
-    raise Error(NOTFOUND)
+class NotFound(Error):
+    def __init__(self, *args, **kw):
+        Error.__init__(self, NOTFOUND)
 
 
-def internal_error():
-    raise Error(FATAL)
+class InternalError(Error):
+    def __init__(self, *args, **kw):
+        Error.__init__(self, FATAL)
+
+
+class NoMethod(Error):
+    def __init__(self, *args, **kw):
+        Error.__init__(self, NOTALLOWED)

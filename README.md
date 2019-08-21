@@ -35,3 +35,12 @@ Set up environment
 ==================
 
 $ docker-compose up
+
+Test
+====
+
+    $ env-vars ()
+    {
+        awk -F= '{printf "'%s=%s' ", $1, $2}' config/test_api.env
+    }
+    $ docker exec -it metrics_api env $(env-vars) nosetests -v

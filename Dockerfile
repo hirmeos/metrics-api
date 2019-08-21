@@ -1,4 +1,4 @@
-FROM python:2
+FROM python:3.5
 
 RUN apt-get update && apt-get -y install apt-utils supervisor
 
@@ -10,9 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt && \
 
 COPY ./config/supervisord.conf /etc/supervisor/supervisord.conf
 
-COPY ./src/* ./
+ADD ./src/ ./
 
-RUN flake8 --ignore=E221,E241 ./
+RUN flake8 ./
 
 EXPOSE 8080
 

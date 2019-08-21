@@ -1,0 +1,26 @@
+language: python
+python:
+  - "3.5"
+services:
+  - postgresql
+env:
+  global:
+    - ALLOW_ORIGIN=*
+    - API_DEBUG=False
+    - SECRET_KEY=verysecretkey
+    - POSTGRES_HOST=localhost
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=
+    - POSTGRES_DB=metrics
+    - WEBPY_ENV=test
+    - USER_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhY2N0OmphdmlAb3BlbmJvb2twdWJsaXNoZXJzLmNvbSIsIm5hbWUiOiJKYXZpZXIgQXJpYXMiLCJlbWFpbCI6ImphdmlAb3BlbmJvb2twdWJsaXNoZXJzLmNvbSIsImF1dGhvcml0eSI6InVzZXIiLCJpYXQiOiIxNTY2Mzg5NDY4IiwiZXhwIjoiMzMxMjMyOTgyNjgifQ.iZVmc07gT8I2UeyV4uOfyPIf076t5yeACwzd9kTJpNs
+    - ADMIN_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhY2N0OmphdmlAb3BlbmJvb2twdWJsaXNoZXJzLmNvbSIsIm5hbWUiOiJKYXZpZXIgQXJpYXMiLCJlbWFpbCI6ImphdmlAb3BlbmJvb2twdWJsaXNoZXJzLmNvbSIsImF1dGhvcml0eSI6ImFkbWluIiwiaWF0IjoiMTU2NjM4OTQ2OCIsImV4cCI6IjMzMTIzMjk4MjY4In0.mn10Dbn0SbOTC0tjEat28SXG7Nf4ZlGyDKqOyvKj7Dk
+install:
+  - pip install -r ./config/requirements.txt
+before_script:
+  - psql -c "create database ${POSTGRES_DB};" -U postgres
+  - for f in ./src/tests/fixtures/metrics_db/sql/* ; do psql -d $POSTGRES_DB -f $f ; done
+  - psql -d $POSTGRES_DB -f ./src/tests/fixtures/events.sql
+script:
+  - flake8 ./src/*
+  - nosetests ./src

@@ -20,6 +20,7 @@ install:
 before_script:
   - psql -c "create database ${POSTGRES_DB};" -U postgres
   - for f in ./src/tests/fixtures/metrics_db/sql/* ; do psql -d $POSTGRES_DB -f $f ; done
+  - psql -d $POSTGRES_DB -f ./src/tests/fixtures/events.sql
 script:
   - flake8 ./src/*
   - nosetests ./src

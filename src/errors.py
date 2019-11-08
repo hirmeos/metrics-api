@@ -1,7 +1,8 @@
 import json
 import web
-from aux import get_input
+from aux import get_input, logger_instance
 
+logger = logger_instance(__name__)
 
 NOTFOUND = 10
 NOTALLOWED = 20
@@ -93,6 +94,7 @@ class NotFound(Error):
 
 class InternalError(Error):
     def __init__(self, *args, **kw):
+        logger.exception('')
         Error.__init__(self, FATAL)
 
 

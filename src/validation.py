@@ -24,7 +24,7 @@ def build_params(filters):
         try:
             field, val = p.split(':', 1)
             if field == "work_uri":
-                uris.append(val)
+                uris.append(val.lower())
             elif field == "measure_uri":
                 measures.append(val)
             elif field == "country_uri":

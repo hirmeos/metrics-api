@@ -64,7 +64,7 @@ class EventsController():
 def save_event(data, from_nameko=False):
     """Store a new event. Ignore token if the event comes from Nameko."""
     try:
-        work_uri = data.get('work_uri')
+        work_uri = data.get('work_uri').lower()
         measure_uri = data.get('measure_uri')
         timestamp = parser.parse(data.get('timestamp'))
         value = data.get('value')

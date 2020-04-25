@@ -1,4 +1,3 @@
-
 Set up docker for, e.g., Ubuntu, using the stable channel
 =========================================================
 
@@ -15,8 +14,8 @@ Instructions cribbed from: https://docs.docker.com/install/linux/docker-ce/ubunt
        $(lsb_release -cs) \
        stable"
 
-Install docker
-==============
+Install Docker
+--------------
 $ sudo apt-get update
 $ sudo apt-get install docker-ce docker-compose
 
@@ -26,18 +25,18 @@ $ sudo adduser $LOGNAME docker
 $ exec newgrp docker    # or log out, log back in
 
 Edit db.env file
-================
+----------------
 
 $ cp db.env.example db.env
 $ $EDITOR db.env
 
 Set up environment
-==================
+------------------
 
 $ docker-compose up
 
 Test
-====
+----
 
     $ env-vars ()
     {

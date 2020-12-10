@@ -1,3 +1,4 @@
+import json
 import os
 
 from redis import Redis
@@ -19,15 +20,35 @@ class MockCacheClient:
         return None
 
 
-class RedisExpireClient(Redis):
-    """Redis client that automatically sets cache expirations."""
+class RedisMetricsClient(Redis):
+    """Redis client that converts values to JSON and sets cache expirations."""
 
     def set(self, *args, **kwargs):
-        kwargs.pop('ex', None)
-        return super().set(*args, **kwargs)
+        raise NotImplementedError(
+            f'Please use {self.__class__.__name__}.set_as_json().'
+        )
+
+    def get(self, *args, **kwargs):
+        raise NotImplementedError(
+            f'Please use {self.__class__.__name__}.get_from_json().'
+        )
+
+    def set_as_json(self, name, value, *args, **kwargs):
+        """Convert value to json before caching."""
+        kwargs.update(ex=kwargs.get('ex', CACHE_LIFESPAN))
+        return super().set(name, json.dumps(value), *args, **kwargs)
+
+    def get_from_json(self, *args, **kwargs):
+        """Load values that have been converted to json before caching."""
+        value = super().get(*args, **kwargs)
+
+        if value:
+            value = json.loads(value)
+
+        return value
 
 
 redis_client = MockCacheClient()
 
 if REDIS_HOST:
-    redis_client = RedisExpireClient(host=REDIS_HOST, port=6379, db=0)
+    redis_client = RedisMetricsClient(host=REDIS_HOST, port=6379, db=0)

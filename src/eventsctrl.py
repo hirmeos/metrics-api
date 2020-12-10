@@ -30,14 +30,14 @@ class EventsController:
         event_id = web.input().get('event_id')
 
         if event_id:
-            value = redis_client.get(event_id)
+            value = redis_client.get_from_json(event_id)
 
             if value:
                 data = json.loads(value)
             else:
                 results = Event.get_from_event_id(event_id)
                 data = results_to_events(results)
-                redis_client.set(event_id, json.dumps(data))
+                redis_client.set_to_json(event_id, data)
 
         else:
             filters = web.input().get('filter')
@@ -54,7 +54,7 @@ class EventsController:
 
             query_args = [criterion, clause, params]
             redis_key = json.dumps(query_args)
-            value = redis_client.get(redis_key)
+            value = redis_client.get_from_json(redis_key)
 
             if value:
                 data = json.loads(value)
@@ -69,7 +69,7 @@ class EventsController:
                 aggregation = Aggregation(criterion)
                 aggregation.data = Event.get_for_aggregation(*query_args)
                 data = aggregation.aggregate()
-                redis_client.set(redis_key, json.dumps(data))
+                redis_client.set_to_json(redis_key, data)
 
         return data
 

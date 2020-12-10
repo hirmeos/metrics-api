@@ -60,11 +60,11 @@ class EventsController:
                 data = json.loads(value)
             else:
                 if not Aggregation.is_allowed(criterion):
-                    m = (
-                        f'Aggregation must be one of the following:'
-                        f' {Aggregation.list_allowed()}'
+                    raise Error(
+                        BADPARAMS,
+                        msg=f'Aggregation must be one of the following:'
+                            f' {Aggregation.list_allowed()}.'
                     )
-                    raise Error(BADPARAMS, msg=m.format())
 
                 aggregation = Aggregation(criterion)
                 aggregation.data = Event.get_for_aggregation(*query_args)

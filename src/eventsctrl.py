@@ -25,7 +25,7 @@ class EventsController:
 
     @json_response
     @api_response
-    def GET(self):
+    def GET(self, name):
         """Get Events with various filtering options"""
         event_id = web.input().get('event_id')
 

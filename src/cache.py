@@ -19,6 +19,14 @@ class MockCacheClient:
     def set(*args, **kwargs):  # noqa
         return None
 
+    @staticmethod
+    def set_as_json(*args, **kwargs):  # noqa
+        return None
+
+    @staticmethod
+    def get_from_json(*args, **kwargs):  # noqa
+        return None
+
 
 class RedisMetricsClient(Redis):
     """Redis client that converts values to JSON and sets cache expirations."""

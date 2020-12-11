@@ -8,26 +8,6 @@ CACHE_LIFESPAN = int(os.getenv('CACHE_LIFESPAN', '3600'))
 REDIS_HOST = os.getenv('REDIS_HOST')
 
 
-class MockCacheClient:
-    """Fake Redis client used if there is no cache implemented."""
-
-    @staticmethod
-    def get(*args, **kwargs):  # noqa
-        return None
-
-    @staticmethod
-    def set(*args, **kwargs):  # noqa
-        return None
-
-    @staticmethod
-    def set_as_json(*args, **kwargs):  # noqa
-        return None
-
-    @staticmethod
-    def get_from_json(*args, **kwargs):  # noqa
-        return None
-
-
 class RedisMetricsClient(Redis):
     """Redis client that converts values to JSON and sets cache expirations."""
 
@@ -56,7 +36,19 @@ class RedisMetricsClient(Redis):
         return value
 
 
-redis_client = MockCacheClient()
+def set_cache_value(name, value, *args, **kwargs):
+    if REDIS_HOST:
+        redis_client = RedisMetricsClient(host=REDIS_HOST, port=6379, db=0)
+        print("value set in cache")
+        return redis_client.set_as_json(name, value, *args, **kwargs)
 
-if REDIS_HOST:
-    redis_client = RedisMetricsClient(host=REDIS_HOST, port=6379, db=0)
+    return None
+
+
+def get_cache_value(*args, **kwargs):
+    if REDIS_HOST:
+        redis_client = RedisMetricsClient(host=REDIS_HOST, port=6379, db=0)
+        print("value fetched from cache")
+        return redis_client.get_from_json(*args, **kwargs)
+
+    return None

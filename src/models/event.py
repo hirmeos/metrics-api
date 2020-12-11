@@ -1,7 +1,7 @@
 from .queries import AGGREGATION_QUERIES, do_query
 
 
-class Event():
+class Event:
     def __init__(self, event_id, work_uri, measure_uri, timestamp, value,
                  event_uri=None, country_uri=None, uploader_uri=''):
         self.event_id = event_id

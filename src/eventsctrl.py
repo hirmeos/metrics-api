@@ -11,7 +11,7 @@ from models.operations import results_to_events
 from api import api_response, json_response
 from auth import get_uploader_from_token, valid_user
 from aux import debug_mode, logger_instance
-from cache import redis_client
+from cache import set_cache_value, get_cache_value
 from errors import BADPARAMS, Error
 from validation import build_date_clause, build_params
 
@@ -30,12 +30,12 @@ class EventsController:
         event_id = web.input().get('event_id')
 
         if event_id:
-            data = redis_client.get_from_json(event_id)
+            data = get_cache_value(event_id)
 
             if not data:
                 results = Event.get_from_event_id(event_id)
                 data = results_to_events(results)
-                redis_client.set_to_json(event_id, data)
+                set_cache_value(event_id, data)
 
         else:
             filters = web.input().get('filter')
@@ -52,7 +52,7 @@ class EventsController:
 
             query_args = [criterion, clause, params]
             redis_key = json.dumps(query_args)
-            data = redis_client.get_from_json(redis_key)
+            data = get_cache_value(redis_key)
 
             if not data:
                 if not Aggregation.is_allowed(criterion):
@@ -65,7 +65,7 @@ class EventsController:
                 aggregation = Aggregation(criterion)
                 aggregation.data = Event.get_for_aggregation(*query_args)
                 data = aggregation.aggregate()
-                redis_client.set_to_json(redis_key, data)
+                set_cache_value(redis_key, data)
 
         return data
 

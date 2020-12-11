@@ -30,11 +30,9 @@ class EventsController:
         event_id = web.input().get('event_id')
 
         if event_id:
-            value = redis_client.get_from_json(event_id)
+            data = redis_client.get_from_json(event_id)
 
-            if value:
-                data = json.loads(value)
-            else:
+            if not data:
                 results = Event.get_from_event_id(event_id)
                 data = results_to_events(results)
                 redis_client.set_to_json(event_id, data)
@@ -54,11 +52,9 @@ class EventsController:
 
             query_args = [criterion, clause, params]
             redis_key = json.dumps(query_args)
-            value = redis_client.get_from_json(redis_key)
+            data = redis_client.get_from_json(redis_key)
 
-            if value:
-                data = json.loads(value)
-            else:
+            if not data:
                 if not Aggregation.is_allowed(criterion):
                     raise Error(
                         BADPARAMS,

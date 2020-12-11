@@ -1,31 +1,44 @@
-import uuid
 from dateutil import parser
+import json
+import uuid
+
 import web
-from aux import logger_instance, debug_mode
-from api import json, json_response, api_response
-from auth import valid_user, get_uploader_from_token
-from validation import build_params, build_date_clause
-from errors import Error, BADPARAMS
+
 from models.event import Event
 from models.aggregation import Aggregation
 from models.operations import results_to_events
+
+from api import api_response, json_response
+from auth import get_uploader_from_token, valid_user
+from aux import debug_mode, logger_instance
+from cache import redis_client
+from errors import BADPARAMS, Error
+from validation import build_date_clause, build_params
+
 
 logger = logger_instance(__name__)
 web.config.debug = debug_mode()
 
 
-class EventsController():
+class EventsController:
     """Handles work related actions"""
 
     @json_response
     @api_response
-    def GET(self, name):
+    def GET(self):
         """Get Events with various filtering options"""
         event_id = web.input().get('event_id')
 
         if event_id:
-            results = Event.get_from_event_id(event_id)
-            data = results_to_events(results)
+            value = redis_client.get_from_json(event_id)
+
+            if value:
+                data = json.loads(value)
+            else:
+                results = Event.get_from_event_id(event_id)
+                data = results_to_events(results)
+                redis_client.set_to_json(event_id, data)
+
         else:
             filters = web.input().get('filter')
             clause, params = build_params(filters)
@@ -38,14 +51,26 @@ class EventsController():
                 params.update(dparams)
 
             criterion = web.input().get('aggregation', '')
-            if not Aggregation.is_allowed(criterion):
-                m = "Aggregation must be one of the following: {}"
-                raise Error(BADPARAMS,
-                            msg=m.format(Aggregation.list_allowed()))
-            aggregation = Aggregation(criterion)
-            aggregation.data = Event.get_for_aggregation(criterion, clause,
-                                                         params)
-            data = aggregation.aggregate()
+
+            query_args = [criterion, clause, params]
+            redis_key = json.dumps(query_args)
+            value = redis_client.get_from_json(redis_key)
+
+            if value:
+                data = json.loads(value)
+            else:
+                if not Aggregation.is_allowed(criterion):
+                    raise Error(
+                        BADPARAMS,
+                        msg=f'Aggregation must be one of the following:'
+                            f' {Aggregation.list_allowed()}.'
+                    )
+
+                aggregation = Aggregation(criterion)
+                aggregation.data = Event.get_for_aggregation(*query_args)
+                data = aggregation.aggregate()
+                redis_client.set_to_json(redis_key, data)
+
         return data
 
     @json_response

@@ -19,10 +19,13 @@ Dependencies:
 import os
 import json
 import sys
-import web
+
 import psycopg2
+import web
+
 from aux import logger_instance, debug_mode, test_mode, get_input
 from errors import Error, InternalError, NotFound, NoMethod, NORESULT
+
 
 # get logging interface
 logger = logger_instance(__name__)

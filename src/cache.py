@@ -4,7 +4,7 @@ import os
 from redis import Redis
 
 
-CACHE_LIFESPAN = int(os.getenv('CACHE_LIFESPAN', '3600'))
+CACHE_LIFESPAN = int(os.getenv('CACHE_LIFESPAN', '86400'))
 REDIS_HOST = os.getenv('REDIS_HOST')
 
 
@@ -39,7 +39,6 @@ class RedisMetricsClient(Redis):
 def set_cache_value(name, value, *args, **kwargs):
     if REDIS_HOST:
         redis_client = RedisMetricsClient(host=REDIS_HOST, port=6379, db=0)
-        print("value set in cache")
         return redis_client.set_as_json(name, value, *args, **kwargs)
 
     return None
@@ -48,7 +47,6 @@ def set_cache_value(name, value, *args, **kwargs):
 def get_cache_value(*args, **kwargs):
     if REDIS_HOST:
         redis_client = RedisMetricsClient(host=REDIS_HOST, port=6379, db=0)
-        print("value fetched from cache")
         return redis_client.get_from_json(*args, **kwargs)
 
     return None

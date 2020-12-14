@@ -32,7 +32,7 @@ class EventsController:
         if event_id:
             data = get_cache_value(event_id)
 
-            if not data:
+            if data is None:
                 results = Event.get_from_event_id(event_id)
                 data = results_to_events(results)
                 set_cache_value(event_id, data)
@@ -54,7 +54,7 @@ class EventsController:
             redis_key = json.dumps(query_args)
             data = get_cache_value(redis_key)
 
-            if not data:
+            if data is None:
                 if not Aggregation.is_allowed(criterion):
                     raise Error(
                         BADPARAMS,

@@ -74,8 +74,13 @@ class EventsController:
     @valid_user
     def POST(self, name=None):
         """Create a new event"""
-        data = json.loads(web.data().decode('utf-8'))
-        return save_event(data)
+        try:
+            data = json.loads(web.data().decode('utf-8'))
+            return save_event(data)
+
+        except Exception as e:  # exception is unclear at this point
+            logger.error(e)
+            raise e
 
     @json_response
     def OPTIONS(self, name):
@@ -98,6 +103,11 @@ def save_event(data, from_nameko=False):
             uploader_uri = get_uploader_from_token()
 
         if not all([work_uri, measure_uri, timestamp, value, uploader_uri]):
+            logger.error(
+                f'Missing Parameters: work_uri: {work_uri}; measure_uri: '
+                f'{measure_uri}; timestamp: {timestamp}, value: {value}; '
+                f'uploader_uri:  {uploader_uri}'
+            )
             raise AssertionError
     except BaseException:
         raise Error(BADPARAMS)

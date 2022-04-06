@@ -115,5 +115,10 @@ def save_event(data, from_nameko=False):
     event_id = str(uuid.uuid4())
     event = Event(event_id, work_uri, measure_uri, timestamp, value, event_uri,
                   country_uri, uploader_uri)
-    event.save()
+
+    try:
+        event.save()
+    except Error:
+        logger.error(f'Failed to save event: {event.__dict__}')
+
     return [event.__dict__]
